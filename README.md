@@ -1,5 +1,10 @@
 # Mobile_App_Project
 
+## Course Information
+- Module Title:Mobile Applications 2
+- Lecturer name: Saravanabalagi Ramachandran
+
+##Student Information
 - Name: Melanie Block
 - Student ID: 25976
 

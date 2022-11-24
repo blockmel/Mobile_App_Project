@@ -2,9 +2,10 @@ package de.hsas.inf.mobile_app_project
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.commit
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -19,14 +20,17 @@ import de.hsas.inf.mobile_app_project.dataTypes.Places
 import de.hsas.inf.mobile_app_project.databinding.ActivityMainBinding
 
 
-const val THIRD_ACT_KEY = "ThirdActivity"
-var places: Array<Places> = emptyArray()
-var placeTypes: Array<PlaceTypes> = emptyArray()
+
 /*val colors = mapOf(1 to 0F, 2 to 22F, 3 to 44F, 4 to 66F, 5 to 88F, 6 to 110F, 7 to 150F,
     8 to 164F, 9 to 186F, 10 to 208F, 11 to 230F, 12 to 260F, 13 to 274F, 14 to 296F, 15 to 328F)*/
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMainBinding
+    val THIRD_ACT_KEY = "ThirdActivity"
+    var places: Array<Places> = emptyArray()
+    var placeTypes: Array<PlaceTypes> = emptyArray()
+    var markersAdded: Boolean = false
+    lateinit var gm: GoogleMap
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -63,6 +67,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     val gson = Gson()
                     places = gson.fromJson(bodyString, Array<Places>::class.java)
                     places.forEach { Log.i(THIRD_ACT_KEY, it.toString()) }
+                    Handler(Looper.getMainLooper()).post {
+                        addMarkers()
+                    }
+
                 }
             }
         })
@@ -86,8 +94,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    override fun onMapReady(gm: GoogleMap) {
-        Thread.sleep(1000)
+    fun addMarkers() {
+        if (gm == null) return
         places.forEach {
             val placeCoordinates = LatLng(it.latitude, it.longitude)
             gm.addMarker(
@@ -97,13 +105,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     .icon(BitmapDescriptorFactory.defaultMarker(getColor(it))))
             //.icon(BitmapDescriptorFactory.defaultMarker(colors.get(it.placeTypeId))))
         }
-        gm.uiSettings.isZoomControlsEnabled = true
+        markersAdded = true
+    }
 
+    override fun onMapReady(gmLocal: GoogleMap) {
+        gm = gmLocal
+        gm.uiSettings.isZoomControlsEnabled = true
+        if (!markersAdded) addMarkers()
        /*gm.moveCamera(CameraUpdateFactory.newLatLng(LatLng(53.4, -6.3)))*/
     }
 
     fun getColor(it: Places): Float {
-        when(it.placeTypeId){
+        when(it.place_type_id){
             1 -> return 0F
             2 -> return 22F
             3 -> return 44F

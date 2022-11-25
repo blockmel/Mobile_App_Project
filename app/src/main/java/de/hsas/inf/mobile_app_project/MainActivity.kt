@@ -1,5 +1,6 @@
 package de.hsas.inf.mobile_app_project
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +12,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import okhttp3.*
 import java.io.IOException
@@ -24,7 +26,7 @@ import de.hsas.inf.mobile_app_project.databinding.ActivityMainBinding
 /*val colors = mapOf(1 to 0F, 2 to 22F, 3 to 44F, 4 to 66F, 5 to 88F, 6 to 110F, 7 to 150F,
     8 to 164F, 9 to 186F, 10 to 208F, 11 to 230F, 12 to 260F, 13 to 274F, 14 to 296F, 15 to 328F)*/
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
     private lateinit var binding: ActivityMainBinding
     val THIRD_ACT_KEY = "ThirdActivity"
     var places: Array<Places> = emptyArray()
@@ -112,6 +114,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         gm = gmLocal
         gm.uiSettings.isZoomControlsEnabled = true
         if (!markersAdded) addMarkers()
+        with(gm){
+            setOnInfoWindowClickListener(this@MainActivity)
+        }
        /*gm.moveCamera(CameraUpdateFactory.newLatLng(LatLng(53.4, -6.3)))*/
     }
 
@@ -137,5 +142,38 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 return 340F
             }
         }
+    }
+
+    override fun onInfoWindowClick(marker: Marker) {
+        val intent= Intent(this, InformationActivity::class.java)
+        Log.e(THIRD_ACT_KEY, marker.toString())
+        Log.e(THIRD_ACT_KEY, marker.id)
+        Log.e(THIRD_ACT_KEY, marker.title.toString())
+        Log.e(THIRD_ACT_KEY, marker.position.latitude.toString())
+        Log.e(THIRD_ACT_KEY, marker.position.longitude.toString())
+
+        var markerID = marker.id
+        markerID = markerID.substring(1)
+        val place = places.get(markerID.toInt())
+        Log.e(THIRD_ACT_KEY, "here "+place.id)
+        intent.putExtra("ID", place.id.toString())
+        intent.putExtra("location", place.location)
+        intent.putExtra("name", place.name)
+        if(place.gaelic_name == null) {
+            intent.putExtra("gaelic_name", "null")
+        } else {
+            intent.putExtra("gaelic_name", place.gaelic_name)
+        }
+        val placeType = placeTypes.get(place.place_type_id-1)
+        intent.putExtra("placeTypeID", placeType.id.toString())
+        intent.putExtra("placeTypeName", placeType.name)
+        intent.putExtra("placeTypeCreated", placeType.created_at)
+        intent.putExtra("placeTypeUpdated", placeType.updated_at)
+        intent.putExtra("latitude", place.latitude.toString())
+        intent.putExtra("longitude", place.longitude.toString())
+
+        /*places.forEach {  }
+        intent.putExtra("name", )*/
+        startActivity(intent)
     }
 }

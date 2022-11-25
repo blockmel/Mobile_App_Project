@@ -2,6 +2,7 @@ package de.hsas.inf.mobile_app_project
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -23,6 +24,11 @@ class InformationActivity : AppCompatActivity() {
                 "\nLatitude: " + intent.getStringExtra("latitude") +
                 "\nLongitude: " + intent.getStringExtra("longitude")
         place_id.setText(text)
+
+        val button: Button = findViewById(R.id.back_button)
+        button.setOnClickListener {
+            this.finish()
+        }
 
 
 

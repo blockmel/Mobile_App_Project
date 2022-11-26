@@ -1,7 +1,7 @@
 package de.hsas.inf.mobile_app_project
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,27 +10,29 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import okhttp3.*
-import java.io.IOException
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import de.hsas.inf.mobile_app_project.dataTypes.PlaceTypes
 import de.hsas.inf.mobile_app_project.dataTypes.Places
 import de.hsas.inf.mobile_app_project.databinding.ActivityMainBinding
-
+import okhttp3.*
+import java.io.IOException
 
 
 /*val colors = mapOf(1 to 0F, 2 to 22F, 3 to 44F, 4 to 66F, 5 to 88F, 6 to 110F, 7 to 150F,
     8 to 164F, 9 to 186F, 10 to 208F, 11 to 230F, 12 to 260F, 13 to 274F, 14 to 296F, 15 to 328F)*/
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, AdapterView.OnItemSelectedListener {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener,
+    GoogleMap.OnMarkerDragListener, AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     val THIRD_ACT_KEY = "ThirdActivity"
     var places: Array<Places> = emptyArray()
@@ -136,14 +138,32 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
         if (!markersAdded) addMarkers()
         with(gm){
             setOnInfoWindowClickListener(this@MainActivity)
+            setOnMarkerDragListener(this@MainActivity)
         }
        /*gm.moveCamera(CameraUpdateFactory.newLatLng(LatLng(53.4, -6.3)))*/
         gm.setOnMapLongClickListener { latLng ->
+            val loc1 = Location("")
+            loc1.setLatitude(latLng.latitude)
+            loc1.setLongitude(latLng.longitude)
+            val loc2 = Location("")
+            var distance: Float = 1.0E19F
+            places.forEach {
+                loc2.setLatitude(it.latitude)
+                loc2.setLongitude(it.longitude)
+                val distanceInMeters: Float = loc1.distanceTo(loc2)
+                val distanceInKilometers: Float = distanceInMeters/1000
+                if (distanceInKilometers < distance){
+                    distance = distanceInKilometers
+                }
+            }
             gm.addMarker(
                 MarkerOptions()
                     .position(latLng)
                     .draggable(true)
             )
+            val snackBar =
+                Snackbar.make(binding.root, distance.toString(), Snackbar.LENGTH_LONG)
+            snackBar.show()
         }
     }
 
@@ -237,4 +257,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
     override fun onNothingSelected(p0: AdapterView<*>?) {
         
     }
+
+    //https://github.com/googlemaps/android-samples/blob/main/ApiDemos/kotlin/app/src/gms/java/com/example/kotlindemos/MarkerDemoActivity.kt
+    override fun onMarkerDrag(marker: Marker) {
+        val loc1 = Location("")
+        loc1.setLatitude(marker.position.latitude)
+        loc1.setLongitude(marker.position.longitude)
+        val loc2 = Location("")
+        var distance: Float = 1.0E19F
+        places.forEach {
+            loc2.setLatitude(it.latitude)
+            loc2.setLongitude(it.longitude)
+            val distanceInMeters: Float = loc1.distanceTo(loc2)
+            val distanceInKilometers: Float = distanceInMeters/1000
+            if (distanceInKilometers < distance){
+                distance = distanceInKilometers
+            }
+        }
+        val snackBar =
+            Snackbar.make(binding.root, distance.toString(), Snackbar.LENGTH_LONG)
+        snackBar.show()
+    }
+
+    override fun onMarkerDragEnd(p0: Marker) {}
+
+    override fun onMarkerDragStart(p0: Marker) {}
 }

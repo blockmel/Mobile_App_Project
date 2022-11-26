@@ -138,6 +138,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
             setOnInfoWindowClickListener(this@MainActivity)
         }
        /*gm.moveCamera(CameraUpdateFactory.newLatLng(LatLng(53.4, -6.3)))*/
+        gm.setOnMapLongClickListener { latLng ->
+            gm.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .draggable(true)
+            )
+        }
     }
 
     fun getColor(it: Places): Float {

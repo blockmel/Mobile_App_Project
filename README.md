@@ -16,10 +16,10 @@
     - [x] When marker is tapped, place name should be displayed on a pop-up info window
 - 2. Show extended information
     - [x] When the pop up info window is tapped, show in full screen all details of the place (id, name, Gaelic name, type, GPS coordinates)
-    - [ ] Show the image of the place if available, else, show a random image loaded from the internet 
+    - [x] Show the image of the place if available, else, show a random image loaded from the internet 
     - [x] Show a back button, when pressed, go back to map view
 - 3. Allow filtering by Place Type 
-    - [ ] Show dropdown for selecting Place Type, default value should be all
+    - [x] Show dropdown for selecting Place Type, default value should be all
     - [ ] When a specific Place Type is selected, show only the places with this Place Type on the map
 - 4. Allow custom marker
     - [ ] Long Press anywhere on map to show a draggable marker
@@ -28,3 +28,10 @@
     - [ ] Create a slider to control the above radius in km (1-1000, default 10) and on change, update the circle on the map and update number of places within the radius info shown accordingly
 
 ## Report
+
+
+## References
+From the following references code was used in part or fully:
+- https://github.com/saravanabalagi/dorset_mobileApp/commit/b9af07fa9cfe9378eb1cbe2c121c6c52839036c5
+- https://stackoverflow.com/questions/44239869/whats-the-kotlin-equivalent-of-javas-string
+- https://stackoverflow.com/questions/45685026/how-can-i-get-a-random-number-in-kotlin

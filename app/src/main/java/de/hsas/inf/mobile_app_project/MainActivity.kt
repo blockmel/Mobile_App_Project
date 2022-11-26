@@ -15,10 +15,7 @@ import androidx.fragment.app.commit
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import de.hsas.inf.mobile_app_project.dataTypes.PlaceTypes
@@ -39,6 +36,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
     var placeTypes: Array<PlaceTypes> = emptyArray()
     var markersAdded: Boolean = false
     lateinit var gm: GoogleMap
+    lateinit var circle: Circle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -161,9 +159,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
                     .position(latLng)
                     .draggable(true)
             )
+
+            circle = gm.addCircle(
+                CircleOptions()
+                    .center(latLng)
+                    .radius(10000.0)
+                    .fillColor(0x5500a2ff)
+                    .strokeWidth(0F)
+            )
+
+            //https://stackoverflow.com/questions/16082622/check-if-marker-is-inside-circle-radius
+            val dist = FloatArray(2)
+            var count = 0
+
+            places.forEach {
+                Location.distanceBetween(
+                    it.latitude, it.longitude,
+                    circle.center.latitude, circle.center.longitude, dist
+                )
+
+                if (dist[0] <= circle.radius) {
+                    count++
+                }
+            }
+
+            val text = "Distance to the nearest place: " + distance.toString() + "\nNumber of places in the radius: " + count.toString()
+
             val snackBar =
-                Snackbar.make(binding.root, distance.toString(), Snackbar.LENGTH_LONG)
+                Snackbar.make(binding.root, text, Snackbar.LENGTH_LONG)
             snackBar.show()
+
         }
     }
 
@@ -274,8 +299,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
                 distance = distanceInKilometers
             }
         }
+        circle.remove()
+        circle = gm.addCircle(
+            CircleOptions()
+                .center(LatLng(marker.position.latitude, marker.position.longitude))
+                .radius(10000.0)
+                .fillColor(0x5500a2ff)
+                .strokeWidth(0F)
+        )
+
+        //https://stackoverflow.com/questions/16082622/check-if-marker-is-inside-circle-radius
+        val dist = FloatArray(2)
+        var count = 0
+
+        places.forEach {
+            Location.distanceBetween(
+                it.latitude, it.longitude,
+                circle.center.latitude, circle.center.longitude, dist
+            )
+
+            if (dist[0] <= circle.radius) {
+                count++
+            }
+        }
+
+        val text = "Distance to the nearest place: " + distance.toString() + "\nNumber of places in the radius: " + count.toString()
+
         val snackBar =
-            Snackbar.make(binding.root, distance.toString(), Snackbar.LENGTH_LONG)
+            Snackbar.make(binding.root, text, Snackbar.LENGTH_LONG)
         snackBar.show()
     }
 

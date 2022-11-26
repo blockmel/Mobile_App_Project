@@ -3,4 +3,24 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hello_android">Hello Android</string>
     <string name="back">Back</string>
+
+    <string-array name="place_types_array">
+        <item>All</item>
+        <item>Province</item>
+        <item>Country</item>
+        <item>City</item>
+        <item>Town</item>
+        <item>Townland</item>
+        <item>Barony</item>
+        <item>Street</item>
+        <item>Village</item>
+        <item>River</item>
+        <item>Other</item>
+        <item>Country</item>
+        <item>Castle</item>
+        <item>Seignory</item>
+        <item>Forest</item>
+        <item>Lake</item>
+    </string-array>
+
 </resources>

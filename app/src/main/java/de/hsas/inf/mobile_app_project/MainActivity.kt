@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.fragment.app.commit
@@ -28,7 +30,7 @@ import de.hsas.inf.mobile_app_project.databinding.ActivityMainBinding
 /*val colors = mapOf(1 to 0F, 2 to 22F, 3 to 44F, 4 to 66F, 5 to 88F, 6 to 110F, 7 to 150F,
     8 to 164F, 9 to 186F, 10 to 208F, 11 to 230F, 12 to 260F, 13 to 274F, 14 to 296F, 15 to 328F)*/
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     val THIRD_ACT_KEY = "ThirdActivity"
     var places: Array<Places> = emptyArray()
@@ -96,6 +98,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
         })
 
         val spinner: Spinner = findViewById(R.id.place_type_spinner)
+        spinner.onItemSelectedListener = this
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter.createFromResource(
             this,
@@ -114,6 +117,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
 
     fun addMarkers() {
         if (gm == null) return
+        gm.clear()
         places.forEach {
             val placeCoordinates = LatLng(it.latitude, it.longitude)
             gm.addMarker(
@@ -168,26 +172,62 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
         Log.e(THIRD_ACT_KEY, marker.position.latitude.toString())
         Log.e(THIRD_ACT_KEY, marker.position.longitude.toString())
 
-        var markerID = marker.id
-        markerID = markerID.substring(1)
-        val place = places.get(markerID.toInt())
-        Log.e(THIRD_ACT_KEY, "here "+place.id)
-        intent.putExtra("ID", place.id.toString())
-        intent.putExtra("location", place.location)
-        intent.putExtra("name", place.name)
-        if(place.gaelic_name == null) {
-            intent.putExtra("gaelic_name", "null")
-        } else {
-            intent.putExtra("gaelic_name", place.gaelic_name)
-        }
-        val placeType = placeTypes.get(place.place_type_id-1)
-        intent.putExtra("placeTypeID", placeType.id.toString())
-        intent.putExtra("placeTypeName", placeType.name)
-        intent.putExtra("placeTypeCreated", placeType.created_at)
-        intent.putExtra("placeTypeUpdated", placeType.updated_at)
-        intent.putExtra("latitude", place.latitude.toString())
-        intent.putExtra("longitude", place.longitude.toString())
+        var placeFound = false
+        places.forEach {
+            if (!placeFound && marker.position.latitude == it.latitude && marker.position.longitude == it.longitude &&
+                marker.title.toString() == it.name){
+                val place = places.get(it.id - 1)
+                Log.e(THIRD_ACT_KEY, "here "+place.id)
+                intent.putExtra("ID", place.id.toString())
+                intent.putExtra("location", place.location)
+                intent.putExtra("name", place.name)
+                if(place.gaelic_name == null) {
+                    intent.putExtra("gaelic_name", "null")
+                } else {
+                    intent.putExtra("gaelic_name", place.gaelic_name)
+                }
+                val placeType = placeTypes.get(place.place_type_id-1)
+                intent.putExtra("placeTypeID", placeType.id.toString())
+                intent.putExtra("placeTypeName", placeType.name)
+                intent.putExtra("placeTypeCreated", placeType.created_at)
+                intent.putExtra("placeTypeUpdated", placeType.updated_at)
+                intent.putExtra("latitude", place.latitude.toString())
+                intent.putExtra("longitude", place.longitude.toString())
 
-        startActivity(intent)
+                placeFound = true
+                startActivity(intent)
+            }
+        }
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+        if (gm == null) return
+        gm.clear()
+        if (pos == 0) {
+            places.forEach {
+                val placeCoordinates = LatLng(it.latitude, it.longitude)
+                gm.addMarker(
+                    MarkerOptions()
+                        .position(placeCoordinates)
+                        .title(it.name)
+                        .icon(BitmapDescriptorFactory.defaultMarker(getColor(it))))
+            }
+        } else {
+            places.forEach {
+                if(it.place_type_id == pos) {
+                    val placeCoordinates = LatLng(it.latitude, it.longitude)
+                    gm.addMarker(
+                        MarkerOptions()
+                            .position(placeCoordinates)
+                            .title(it.name)
+                            .icon(BitmapDescriptorFactory.defaultMarker(getColor(it))))
+                }
+            }
+        }
+
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
+        
     }
 }

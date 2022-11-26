@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import de.hsas.inf.mobile_app_project.dataTypes.PlaceTypes
@@ -37,11 +38,73 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
     var markersAdded: Boolean = false
     lateinit var gm: GoogleMap
     lateinit var circle: Circle
+    lateinit var slider: Slider
+    val touchListener: Slider.OnSliderTouchListener = object : Slider.OnSliderTouchListener {
+        override fun onStartTrackingTouch(slider: Slider) {
+            val text = "start " + slider.value.toString()
+            Log.e(THIRD_ACT_KEY, text)
+        }
+
+        override fun onStopTrackingTouch(slider: Slider) {
+            val texten = "stop " + slider.value.toString()
+            Log.e(THIRD_ACT_KEY, texten)
+
+            val latitude = circle.getCenter().latitude
+            val longitude = circle.getCenter().longitude
+
+            val loc1 = Location("")
+            loc1.setLatitude(latitude)
+            loc1.setLongitude(longitude)
+            val loc2 = Location("")
+            var distance: Float = 1.0E19F
+            places.forEach {
+                loc2.setLatitude(it.latitude)
+                loc2.setLongitude(it.longitude)
+                val distanceInMeters: Float = loc1.distanceTo(loc2)
+                val distanceInKilometers: Float = distanceInMeters/1000
+                if (distanceInKilometers < distance){
+                    distance = distanceInKilometers
+                }
+            }
+            circle.remove()
+            circle = gm.addCircle(
+                CircleOptions()
+                    .center(LatLng(latitude, longitude))
+                    .radius(slider.value.toDouble()*1000)
+                    .fillColor(0x5500a2ff)
+                    .strokeWidth(0F)
+            )
+
+            //https://stackoverflow.com/questions/16082622/check-if-marker-is-inside-circle-radius
+            val dist = FloatArray(2)
+            var count = 0
+
+            places.forEach {
+                Location.distanceBetween(
+                    it.latitude, it.longitude,
+                    circle.center.latitude, circle.center.longitude, dist
+                )
+
+                if (dist[0] <= circle.radius) {
+                    count++
+                }
+            }
+
+            val text = "Distance to the nearest place: " + distance.toString() + "\nNumber of places in the radius: " + count.toString()
+
+            val snackBar =
+                Snackbar.make(binding.root, text, Snackbar.LENGTH_LONG)
+            snackBar.show()
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val rootView = binding.root
         setContentView(rootView)
+
+        slider = findViewById(R.id.slider)
+        slider.addOnSliderTouchListener(touchListener)
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -160,6 +223,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
                     .draggable(true)
             )
 
+            slider.value = 10F
             circle = gm.addCircle(
                 CircleOptions()
                     .center(latLng)
@@ -167,6 +231,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
                     .fillColor(0x5500a2ff)
                     .strokeWidth(0F)
             )
+
+            slider.visibility = View.VISIBLE
 
             //https://stackoverflow.com/questions/16082622/check-if-marker-is-inside-circle-radius
             val dist = FloatArray(2)
@@ -303,7 +369,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
         circle = gm.addCircle(
             CircleOptions()
                 .center(LatLng(marker.position.latitude, marker.position.longitude))
-                .radius(10000.0)
+                .radius(slider.value.toDouble()*1000)
                 .fillColor(0x5500a2ff)
                 .strokeWidth(0F)
         )

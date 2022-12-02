@@ -26,9 +26,6 @@ import okhttp3.*
 import java.io.IOException
 
 
-/*val colors = mapOf(1 to 0F, 2 to 22F, 3 to 44F, 4 to 66F, 5 to 88F, 6 to 110F, 7 to 150F,
-    8 to 164F, 9 to 186F, 10 to 208F, 11 to 230F, 12 to 260F, 13 to 274F, 14 to 296F, 15 to 328F)*/
-
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener,
     GoogleMap.OnMarkerDragListener, AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
@@ -121,10 +118,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
 
         val client = OkHttpClient()
         var request = Request.Builder().url("https://gist.githubusercontent.com/saravanabalagi/541a511eb71c366e0bf3eecbee2dab0a/raw/bb1529d2e5b71fd06760cb030d6e15d6d56c34b3/places.json").build()
-        /*client.newCall(request).execute()
-        try(Response response = client.newCall(request).execute()){
 
-        } */
         client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e(THIRD_ACT_KEY, "Exception: $e")
@@ -162,20 +156,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
 
         val spinner: Spinner = findViewById(R.id.place_type_spinner)
         spinner.onItemSelectedListener = this
-        // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter.createFromResource(
             this,
             R.array.place_types_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             spinner.adapter = adapter
         }
-
-
-
     }
 
     fun addMarkers() {
@@ -188,7 +176,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
                     .position(placeCoordinates)
                     .title(it.name)
                     .icon(BitmapDescriptorFactory.defaultMarker(getColor(it))))
-            //.icon(BitmapDescriptorFactory.defaultMarker(colors.get(it.placeTypeId))))
         }
         markersAdded = true
     }
@@ -201,7 +188,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnInfoWi
             setOnInfoWindowClickListener(this@MainActivity)
             setOnMarkerDragListener(this@MainActivity)
         }
-       /*gm.moveCamera(CameraUpdateFactory.newLatLng(LatLng(53.4, -6.3)))*/
         gm.setOnMapLongClickListener { latLng ->
             val loc1 = Location("")
             loc1.setLatitude(latLng.latitude)
